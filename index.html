@@ -13,10 +13,46 @@
         .hidden { display: none; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Modal for WhatsApp Options */
         .wa-modal { animation: popIn 0.2s ease-out; }
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* --- SEAT TOOLTIP STYLES --- */
+        .seat-container { position: relative; }
+        .seat-tooltip {
+            visibility: hidden;
+            position: absolute;
+            bottom: 120%; /* Position above the seat */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1e293b; /* Slate 800 */
+            color: #fff;
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 8px;
+            z-index: 100;
+            width: max-content;
+            max-width: 250px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.75rem;
+            pointer-events: none; /* Prevents tooltip from flickering when hovered */
+        }
+        /* Little arrow pointing down */
+        .seat-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+        .seat-container:hover .seat-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans pb-20">
@@ -59,9 +95,17 @@
                         <input type="date" id="regDate" class="w-full p-3 rounded-lg border bg-white" required>
                     </div>
                 </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500">Set Password</label>
-                    <input type="text" id="password" placeholder="Create login password" class="w-full p-3 rounded-lg border bg-white">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500">Set Password</label>
+                        <input type="text" id="password" placeholder="Login password" class="w-full p-3 rounded-lg border bg-white">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500">Assign Seat No.</label>
+                        <select id="seatNo" class="w-full p-3 rounded-lg border bg-white font-bold text-blue-700">
+                            <option value="">None</option>
+                            </select>
+                    </div>
                 </div>
             </div>
 
@@ -155,25 +199,56 @@
         </form>
     </main>
 
-    <main id="adminView" class="hidden max-w-md mx-auto px-4 py-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-slate-700">Student List</h2>
-            <button onclick="toggleView('form')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-blue-200">
-                <i class="fa-solid fa-plus mr-1"></i> Add New
-            </button>
-        </div>
+    <main id="adminView" class="hidden max-w-md mx-auto px-4 py-6 space-y-6">
+        
+        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/60">
+            <h2 class="text-base font-bold text-slate-700 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chair text-blue-600"></i> Seat Availability
+            </h2>
+            
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <p class="text-[10px] text-slate-400 font-bold text-center mb-2 uppercase">Left Wing</p>
+                    <div id="seatGridLeft" class="grid grid-cols-3 gap-2">
+                        </div>
+                </div>
+                
+                <div class="flex-1">
+                    <p class="text-[10px] text-slate-400 font-bold text-center mb-2 uppercase">Right Wing</p>
+                    <div id="seatGridRight" class="grid grid-cols-3 gap-2">
+                        </div>
+                </div>
+            </div>
 
-        <div class="relative mb-4">
-            <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-400 text-sm"></i>
-            <input type="text" id="searchInput" onkeyup="filterStudents()" placeholder="Search Name, Reg No, or Mobile..." class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:border-blue-500">
-        </div>
+             <div class="flex items-center gap-4 mt-4 text-[10px] justify-center bg-slate-50 p-2 rounded-lg">
+                <div class="flex items-center gap-1"><div class="w-3 h-3 rounded border bg-white"></div> Available</div>
+                <div class="flex items-center gap-1"><div class="w-3 h-3 rounded border border-green-200 bg-green-100"></div> Booked</div>
+                <span class="text-slate-400 ml-2">(Hover seat for details)</span>
+            </div>
+        </section>
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-700">Student List</h2>
+                <div class="flex gap-2">
+                    <button onclick="openBroadcastModal()" class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-lg shadow-green-200 animate-pulse">
+                        <i class="fa-solid fa-bullhorn mr-1"></i> Broadcast
+                    </button>
+                    <button onclick="toggleView('form')" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-lg shadow-blue-200">
+                        <i class="fa-solid fa-plus mr-1"></i> Add
+                    </button>
+                </div>
+            </div>
 
-        <div id="studentListContainer" class="space-y-4 pb-24">
-            <div class="text-center py-10"><div class="loader"></div><p class="text-xs text-slate-400 mt-2">Loading Database...</p></div>
+            <div class="relative mb-4">
+                <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-400 text-sm"></i>
+                <input type="text" id="searchInput" onkeyup="filterStudents()" placeholder="Search Name, Reg No, or Mobile..." class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div id="studentListContainer" class="space-y-4 pb-24">
+                <div class="text-center py-10"><div class="loader"></div><p class="text-xs text-slate-400 mt-2">Loading Database...</p></div>
+            </div>
         </div>
     </main>
-
-    <canvas id="idCardCanvas" width="1000" height="600" class="hidden"></canvas>
 
     <div id="waModal" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm" onclick="closeWaModal(event)">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 wa-modal shadow-2xl" onclick="event.stopPropagation()">
@@ -197,11 +272,41 @@
         </div>
     </div>
 
+    <div id="broadcastModal" class="fixed inset-0 bg-black/80 hidden z-[70] flex flex-col justify-end sm:justify-center p-4 backdrop-blur-md">
+        <div class="bg-white w-full max-w-sm mx-auto rounded-t-2xl sm:rounded-2xl h-[80vh] flex flex-col wa-modal shadow-2xl">
+            <div class="p-5 border-b border-slate-100 bg-red-50 rounded-t-2xl flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-lg text-red-600 flex items-center gap-2">
+                        <i class="fa-solid fa-users-viewfinder"></i> Batch Broadcast
+                    </h3>
+                    <p class="text-xs text-red-400">Library Closed Alert</p>
+                </div>
+                <button onclick="document.getElementById('broadcastModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-b border-slate-200">
+                <label class="text-xs font-bold text-slate-500 block mb-1">Select Closure Date</label>
+                <input type="date" id="broadcastDate" class="w-full p-2 rounded border border-slate-300 text-sm font-bold text-slate-700" onchange="updateBroadcastPreview()">
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="broadcastList">
+                </div>
+
+            <div class="p-4 border-t border-slate-100 text-center">
+                <p class="text-[10px] text-slate-400">Students grouped in batches of 10 for easier sending.</p>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="idCardCanvas" width="1000" height="600" class="hidden"></canvas>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // YOUR API CONFIG
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAEU3K8FzwfZOsdTHSOTBzPoQ7wWc1jIhk",
             authDomain: "safallibrary02-4e47b.firebaseapp.com",
@@ -215,12 +320,14 @@
         const db = getFirestore(app);
 
         let allStudents = [];
-        let currentWaStudent = null; // Stores student data for the open modal
+        let currentWaStudent = null;
 
         // --- DEFAULTS ---
         document.getElementById('regDate').valueAsDate = new Date();
         const nextMonth = new Date(); nextMonth.setDate(nextMonth.getDate() + 30);
         document.getElementById('feeDueDate').value = nextMonth.toISOString().split('T')[0];
+        document.getElementById('broadcastDate').valueAsDate = new Date();
+        generateSeatDropdown(); // Init seat dropdown
 
         // --- VIEW HANDLING ---
         window.toggleView = function(view) {
@@ -233,6 +340,68 @@
                 document.getElementById('registrationView').classList.remove('hidden');
             }
         }
+
+        // --- SEAT FUNCTIONS ---
+        function generateSeatDropdown() {
+            const select = document.getElementById('seatNo');
+            for (let i = 1; i <= 36; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.innerText = `Seat ${i}`;
+                select.appendChild(option);
+            }
+        }
+
+        function renderSeatGrid(students) {
+            const leftContainer = document.getElementById('seatGridLeft');
+            const rightContainer = document.getElementById('seatGridRight');
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+
+            // Map bookings to seats
+            const seatBookings = {};
+            students.forEach(s => {
+                if(s.seatNo) {
+                    if(!seatBookings[s.seatNo]) seatBookings[s.seatNo] = [];
+                    seatBookings[s.seatNo].push(s);
+                }
+            });
+
+            for (let i = 1; i <= 36; i++) {
+                const seatNum = i.toString();
+                const bookings = seatBookings[seatNum] || [];
+                const isBooked = bookings.length > 0;
+
+                const seatEl = document.createElement('div');
+                // Base styling for seat container
+                seatEl.className = `seat-container relative h-12 rounded-lg border flex items-center justify-center font-bold text-sm transition-all cursor-default ${isBooked ? 'bg-green-100 border-green-300 text-green-800' : 'bg-white border-slate-200 text-slate-400'}`;
+                seatEl.innerText = i;
+
+                // Create Tooltip if booked
+                if (isBooked) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = "seat-tooltip";
+                    
+                    let tooltipHTML = `<div class="font-bold border-b border-slate-600 pb-1 mb-1">Seat ${i} Occupants:</div>`;
+                    bookings.forEach(b => {
+                        tooltipHTML += `<div class="mb-1 last:mb-0">
+                            <span class="text-blue-200">${b.name}</span>
+                            <br><span class="text-[10px] text-slate-400">${formatTime(b.shiftStart)} - ${formatTime(b.shiftEnd)}</span>
+                        </div>`;
+                    });
+                    tooltip.innerHTML = tooltipHTML;
+                    seatEl.appendChild(tooltip);
+                }
+
+                // Add to correct wing
+                if (i <= 18) {
+                    leftContainer.appendChild(seatEl);
+                } else {
+                    rightContainer.appendChild(seatEl);
+                }
+            }
+        }
+
 
         // --- IMAGE HANDLING ---
         window.handleImageUpload = function(event) {
@@ -281,6 +450,7 @@
                 const studentData = {
                     regNo: document.getElementById('regNo').value.toUpperCase(),
                     password: document.getElementById('password').value,
+                    seatNo: document.getElementById('seatNo').value, // Save Seat No
                     regDate: document.getElementById('regDate').value,
                     name: document.getElementById('studentName').value,
                     father: document.getElementById('fatherName').value,
@@ -323,9 +493,14 @@
                 const querySnapshot = await getDocs(collection(db, "students"));
                 allStudents = [];
                 querySnapshot.forEach((doc) => allStudents.push({ id: doc.id, ...doc.data() }));
+                
+                // Render both views
                 renderList(allStudents);
+                renderSeatGrid(allStudents);
+
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500 text-center">Error loading data.</p>`;
+                console.error(error);
             }
         }
 
@@ -343,6 +518,9 @@
                 const isOverdue = feeDate < new Date();
                 const feeClass = isOverdue ? 'text-red-500 font-bold' : 'text-green-600';
                 const avatar = s.image ? `<img src="${s.image}" class="w-16 h-16 rounded-lg object-cover bg-slate-100 border">` : `<div class="w-16 h-16 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-xl">${s.name.charAt(0)}</div>`;
+                
+                // Seat badge
+                const seatBadge = s.seatNo ? `<span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold ml-2"><i class="fa-solid fa-chair mr-1"></i>Seat ${s.seatNo}</span>` : '';
 
                 const card = document.createElement('div');
                 card.className = 'bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative';
@@ -350,9 +528,12 @@
                     <div class="flex gap-3 mb-3">
                         ${avatar}
                         <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-start">
+                            <div class="flex justify-between items-start flex-wrap gap-1">
                                 <h3 class="font-bold text-slate-800 text-sm truncate">${s.name}</h3>
-                                <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">#${s.regNo || '---'}</span>
+                                <div>
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">#${s.regNo || '---'}</span>
+                                    ${seatBadge}
+                                </div>
                             </div>
                             <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-phone text-[10px] mr-1"></i> ${s.mobile}</p>
                             <div class="flex items-center gap-3 mt-2 text-[10px] text-slate-500 border-t border-slate-50 pt-2">
@@ -381,6 +562,61 @@
             });
         }
 
+        // --- BATCH BROADCAST LOGIC (GROUPS OF 10) ---
+        window.openBroadcastModal = function() {
+            document.getElementById('broadcastModal').classList.remove('hidden');
+            window.updateBroadcastPreview(); 
+        }
+
+        window.updateBroadcastPreview = function() {
+            const dateVal = document.getElementById('broadcastDate').value;
+            const formattedDate = new Date(dateVal).toLocaleDateString('en-GB');
+            const list = document.getElementById('broadcastList');
+            list.innerHTML = "";
+
+            if (allStudents.length === 0) {
+                list.innerHTML = "<p class='text-center text-slate-400'>No students to message.</p>";
+                return;
+            }
+
+            // Create Groups of 10
+            const batchSize = 10;
+            for (let i = 0; i < allStudents.length; i += batchSize) {
+                const batch = allStudents.slice(i, i + batchSize);
+                const batchNum = (i / batchSize) + 1;
+
+                const batchContainer = document.createElement('div');
+                batchContainer.className = "mb-4 border border-slate-200 rounded-xl overflow-hidden";
+                
+                const header = document.createElement('div');
+                header.className = "bg-slate-100 p-2 font-bold text-xs text-slate-600 flex justify-between";
+                header.innerHTML = `<span>Batch ${batchNum}</span> <span>${batch.length} Students</span>`;
+                batchContainer.appendChild(header);
+
+                batch.forEach(s => {
+                    const row = document.createElement('div');
+                    row.className = "flex justify-between items-center bg-white p-3 border-b border-slate-50";
+                    
+                    const msg = `*NOTICE: Library Closed* 🛑%0A%0ADate: ${formattedDate}%0A%0ADear ${s.name},%0AThe library will remain closed on the above date.%0A%0AWe apologize for the inconvenience caused.`;
+                    
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[10px] text-slate-500">
+                                ${s.name.charAt(0)}
+                            </div>
+                            <span class="text-xs font-bold text-slate-700 truncate">${s.name}</span>
+                        </div>
+                        <a href="https://wa.me/91${s.mobile}?text=${msg}" target="_blank" class="bg-red-50 text-red-600 px-3 py-1 rounded text-[10px] font-bold hover:bg-red-100">
+                            Send
+                        </a>
+                    `;
+                    batchContainer.appendChild(row);
+                });
+
+                list.appendChild(batchContainer);
+            }
+        }
+
         // --- EDIT & DELETE ---
         window.editStudent = function(docId) {
             const s = allStudents.find(student => student.id === docId);
@@ -388,6 +624,7 @@
             document.getElementById('editDocId').value = docId;
             document.getElementById('regNo').value = s.regNo || '';
             document.getElementById('password').value = s.password || '';
+            document.getElementById('seatNo').value = s.seatNo || ''; // Populate Seat
             document.getElementById('regDate').value = s.regDate;
             document.getElementById('studentName').value = s.name;
             document.getElementById('fatherName').value = s.father;
@@ -417,74 +654,113 @@
             }
         }
 
-        // --- ID CARD GENERATOR (CANVAS) ---
+        // --- FIXED ID CARD GENERATOR ---
         window.generateID = function(docId) {
             const s = allStudents.find(student => student.id === docId);
-            if(!s) return;
+            if(!s) { alert("Error: Student data not found."); return; }
+
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            btn.disabled = true;
 
             const canvas = document.getElementById('idCardCanvas');
             const ctx = canvas.getContext('2d');
 
-            // 1. Background
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, 1000, 600);
             
-            // Header
-            ctx.fillStyle = "#2563eb"; // Blue
+            ctx.fillStyle = "#2563eb"; 
             ctx.fillRect(0, 0, 1000, 120);
+            
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 50px Arial";
             ctx.textAlign = "center";
             ctx.fillText("SAFAL LIBRARY", 500, 80);
 
-            // Photo Border
             ctx.lineWidth = 5;
             ctx.strokeStyle = "#2563eb";
             ctx.strokeRect(50, 150, 250, 300);
 
-            // Text Styles
-            ctx.fillStyle = "#1e293b"; // Slate 800
+            ctx.fillStyle = "#1e293b"; 
             ctx.textAlign = "left";
-            ctx.font = "bold 35px Arial";
-            ctx.fillText(s.name.toUpperCase(), 350, 190);
-
-            ctx.font = "28px Arial";
-            ctx.fillStyle = "#64748b"; // Slate 500
             
-            const startY = 250;
-            const gap = 50;
-            
-            ctx.fillText(`Reg No: ${s.regNo}`, 350, startY);
-            ctx.fillText(`Mobile: ${s.mobile}`, 350, startY + gap);
-            ctx.fillText(`Address: ${s.address.substring(0, 30)}...`, 350, startY + gap*2);
-            ctx.fillText(`Valid Thru: ${s.feeDueDate}`, 350, startY + gap*3);
+            let fontSize = 40;
+            ctx.font = `bold ${fontSize}px Arial`;
+            while (ctx.measureText(s.name.toUpperCase()).width > 550) {
+                fontSize -= 2;
+                ctx.font = `bold ${fontSize}px Arial`;
+            }
+            ctx.fillText(s.name.toUpperCase(), 350, 200);
 
-            // Footer
+            ctx.font = "bold 28px Arial";
+            ctx.fillStyle = "#64748b"; 
+            
+            const startY = 280;
+            const gap = 55;
+            
+            ctx.fillText(`Reg No:`, 350, startY);
+            ctx.fillStyle = "#000000";
+            ctx.fillText(`${s.regNo}`, 500, startY);
+
+            ctx.fillStyle = "#64748b";
+            ctx.fillText(`Mobile:`, 350, startY + gap);
+            ctx.fillStyle = "#000000";
+            ctx.fillText(`${s.mobile}`, 500, startY + gap);
+
+            ctx.fillStyle = "#64748b";
+            ctx.fillText(`Address:`, 350, startY + gap*2);
+            ctx.fillStyle = "#000000";
+            let addr = s.address || "";
+            if(addr.length > 25) addr = addr.substring(0, 25) + "...";
+            ctx.fillText(`${addr}`, 500, startY + gap*2);
+
+            ctx.fillStyle = "#64748b";
+            ctx.fillText(`Valid Thru:`, 350, startY + gap*3);
+            ctx.fillStyle = "#dc2626";
+            ctx.fillText(`${s.feeDueDate}`, 500, startY + gap*3);
+
             ctx.fillStyle = "#f1f5f9";
             ctx.fillRect(0, 520, 1000, 80);
             ctx.fillStyle = "#2563eb";
             ctx.font = "bold 25px Arial";
             ctx.textAlign = "center";
-            ctx.fillText("Always Carry This Card", 500, 570);
+            ctx.fillText("Note: Please carry this card daily.", 500, 570);
 
-            // Draw Image (Async) & Download
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.src = s.image || "https://via.placeholder.com/250x300";
-            
+            img.src = s.image || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; 
+
             img.onload = function() {
-                // Crop/Fit image into 250x300 box at x=50, y=150
                 ctx.drawImage(img, 50, 150, 250, 300);
-                
-                // Download
-                const link = document.createElement('a');
-                link.download = `ID_${s.regNo}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
+                downloadCanvas(s.regNo);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            };
+
+            img.onerror = function() {
+                ctx.fillStyle = "#cccccc";
+                ctx.fillRect(50, 150, 250, 300);
+                downloadCanvas(s.regNo);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+
+            function downloadCanvas(regNo) {
+                try {
+                    const link = document.createElement('a');
+                    link.download = `ID_${regNo}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    alert("Blocked. Right-click to save.");
+                }
             }
         }
 
-        // --- WHATSAPP LOGIC ---
+        // --- SINGLE WHATSAPP LOGIC ---
         window.openWaModal = function(docId) {
             const s = allStudents.find(student => student.id === docId);
             if(!s) return;
